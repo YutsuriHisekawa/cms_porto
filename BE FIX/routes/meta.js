@@ -144,4 +144,26 @@ router.get('/with-detail/:table', async (req, res) => {
   }
 });
 
+// POST /meta/register - dummy endpoint for meta register (for FE compatibility)
+router.post('/register', (req, res) => {
+  // You can return a static or dynamic meta for register fields
+  res.json({
+    nama: '{required}-[string]-<data:input>',
+    username: '{required}-[string]-<data:input>',
+    email: '{required}-[string]-<data:input>',
+    password: '{required}-[string]-<data:input>'
+  })
+})
+
+// GET /meta/register - meta info for register (for FE compatibility)
+router.get('/register', (req, res) => {
+  res.json({
+    nama: '{required}-[string]-<data:input>',
+    username: '{required}-[string]-<data:input>',
+    email: '{required}-[string]-<data:input>',
+    password: '{required}-[string]-<data:input>',
+    repassword: '{required}-[string]-<data:input>'
+  })
+})
+
 module.exports = { router, setPool };

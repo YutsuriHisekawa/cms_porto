@@ -2,14 +2,17 @@
 // Redirect to dashboard if authenticated, otherwise to login
 import { useAuthStore } from '~/stores/auth'
 import { navigateTo } from '#app'
+import { watchEffect } from 'vue'
 
 const auth = useAuthStore()
 
-if (auth.isAuthenticated) {
-  await navigateTo('/dashboard')
-} else {
-  await navigateTo('/login')
-}
+watchEffect(() => {
+  if (auth.isAuthenticated) {
+    navigateTo('/dashboard')
+  } else {
+    navigateTo('/login')
+  }
+})
 </script>
 
 <template>

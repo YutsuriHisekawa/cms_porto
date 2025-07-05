@@ -7,12 +7,15 @@
 </template>
 
 <script setup>
-// Redirect to dashboard if already authenticated
-const { isAuthenticated } = useAuthStore()
+import { useAuthStore } from '~/stores/auth'
+import { navigateTo } from '#app'
+import { watchEffect } from 'vue'
 
-watch(isAuthenticated, (newValue) => {
-  if (newValue) {
+const auth = useAuthStore()
+
+watchEffect(() => {
+  if (auth.isAuthenticated) {
     navigateTo('/dashboard')
   }
-}, { immediate: true })
+})
 </script>

@@ -44,11 +44,11 @@ function validateUuidParam(req, res, next) {
     next();
 }
 
-// Get all users (requires auth)
-router.get('/', authMiddleware, async (req, res) => {
+// Get all users (public, no auth)
+router.get('/', async (req, res) => {
     try {
         const { rows } = await pool.query(
-            'SELECT id, nama, username, email, role, created_at FROM users'
+            'SELECT id, nama, nama_lengkap, username, email, role, profile_picture, description, created_at, updated_at, slug FROM users'
         );
         res.json(rows);
     } catch (err) {
@@ -57,31 +57,27 @@ router.get('/', authMiddleware, async (req, res) => {
     }
 });
 
-// Create new user (requires auth)
-router.post('/', authMiddleware, async (req, res) => {
-    const { nama, username, email, password } = req.body;
-    if (!nama || !username || !email || !password) {
-        return res.status(400).json({ error: 'All fields are required' });
+// POST /users - public registration endpoint (no auth)
+router.post('/', async (req, res) => {
+    const { nama_lengkap, username, email, password, repassword } = req.body;
+    if (!nama_lengkap || !username || !email || !password || !repassword) {
+        return res.status(400).json({ error: 'Semua field wajib diisi' });
+    }
+    if (!email.includes('@')) {
+        return res.status(400).json({ error: 'Email tidak valid' });
+    }
+    if (password !== repassword) {
+        return res.status(400).json({ error: 'Password dan re-password harus sama' });
     }
     try {
-        // Check if username/email already exists
-        const existing = await pool.query(
-            'SELECT * FROM users WHERE username = $1 OR email = $2', 
-            [username, email]
-        );
+        const existing = await pool.query('SELECT * FROM users WHERE username = $1 OR email = $2', [username, email]);
         if (existing.rowCount > 0) {
-            return res.status(409).json({ error: 'Username or email already registered' });
+            return res.status(409).json({ error: 'Username atau email sudah terdaftar' });
         }
-        // Hash password
         const salt = await bcrypt.genSalt(10);
         const password_hash = await bcrypt.hash(password, salt);
-        // Insert new user
-        const insertQuery = `
-            INSERT INTO users (nama, username, email, password_hash) 
-            VALUES ($1, $2, $3, $4) 
-            RETURNING id, nama, username, email, role, password, created_at
-        `;
-        const values = [nama, username, email, password_hash];
+        const insertQuery = `INSERT INTO users (nama_lengkap, username, email, password_hash, role) VALUES ($1, $2, $3, $4, 'USER') RETURNING id, nama_lengkap, username, email, role, created_at`;
+        const values = [nama_lengkap, username, email, password_hash];
         const result = await pool.query(insertQuery, values);
         res.status(201).json(result.rows[0]);
     } catch (err) {
@@ -89,38 +85,6 @@ router.post('/', authMiddleware, async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 });
-
-// Login endpoint to get token
-// router.post('/login', async (req, res) => {
-//     const { username, password } = req.body;
-//     if (!username || !password) {
-//         return res.status(400).json({ error: 'Username and password are required' });
-//     }
-//     try {
-//         const userResult = await pool.query(
-//             'SELECT * FROM users WHERE username = $1', 
-//             [username]
-//         );
-//         if (userResult.rowCount === 0) {
-//             return res.status(401).json({ error: 'Invalid username or password' });
-//         }
-//         const user = userResult.rows[0];
-//         const valid = await bcrypt.compare(password, user.password_hash);
-//         if (!valid) {
-//             return res.status(401).json({ error: 'Invalid username or password' });
-//         }
-//         // Generate JWT token
-//         const token = jwt.sign(
-//             { id: user.id, username: user.username, email: user.email },
-//             JWT_SECRET,
-//             { expiresIn: '1h' }
-//         );
-//         res.json({ token });
-//     } catch (err) {
-//         console.error(err.message);
-//         res.status(500).json({ error: 'Server error' });
-//     }
-// });
 
 // Update user (requires auth, super admin can update any user)
 router.put('/:id', authMiddleware, validateUuidParam, async (req, res) => {
@@ -165,13 +129,13 @@ router.put('/:id', authMiddleware, validateUuidParam, async (req, res) => {
     }
 });
 
-// Get user by ID (requires auth)
-router.get('/:id', authMiddleware, validateUuidParam, async (req, res) => {
-    const { id } = req.params;
+// Get user by slug (public, no auth)
+router.get('/:slug', async (req, res) => {
+    const { slug } = req.params;
     try {
         const result = await pool.query(
-            'SELECT id, nama, username, email, role, created_at FROM users WHERE id = $1', 
-            [id]
+            'SELECT id, nama, nama_lengkap, username, email, role, profile_picture, description, created_at, updated_at, slug FROM users WHERE slug = $1',
+            [slug]
         );
         if (result.rowCount === 0) {
             return res.status(404).json({ error: 'User not found' });

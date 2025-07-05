@@ -16,11 +16,13 @@
     "@vee-validate/nuxt": "^4.13.2",
     "@vee-validate/yup": "^4.13.2",
     "@vueuse/nuxt": "^11.0.3",
+    "cropperjs": "^2.0.0",
     "dompurify": "^3.2.6",
     "jwt-decode": "^4.0.0",
     "nuxt": "^3.13.0",
     "pinia": "^2.1.7",
     "sweetalert2": "^11.22.2",
+    "vue-cropperjs": "^5.0.0",
     "vue-toastification": "^2.0.0-rc.5",
     "yup": "^1.4.0"
   },

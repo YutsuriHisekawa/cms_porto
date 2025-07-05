@@ -32,12 +32,12 @@
       <div class="flex items-center space-x-3">
         <img
           :src="user?.avatar || 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=1'"
-          :alt="user?.name"
+          :alt="user?.nama"
           class="w-8 h-8 rounded-full"
         />
         <div class="flex-1 min-w-0">
           <p class="text-sm font-medium text-primary-900 dark:text-primary-100 truncate">
-            {{ user?.name }}
+            {{ user?.nama }}
           </p>
           <p class="text-xs text-primary-500 dark:text-primary-400 truncate">
             {{ user?.email }}
@@ -87,7 +87,7 @@
         />
         <div class="flex-1 min-w-0">
           <p class="text-sm font-medium text-primary-900 dark:text-primary-100 truncate">
-            {{ user?.name }}
+            {{ user?.nama }}
           </p>
           <p class="text-xs text-primary-500 dark:text-primary-400 truncate">
             {{ user?.email }}

@@ -42,10 +42,6 @@ const loginRoute = require('./routes/login');
 loginRoute.setPool(pool);
 app.use('/login', loginRoute.router);
 
-const registerRoute = require('./routes/register');
-registerRoute.setPool(pool);
-app.use('/register', registerRoute.router);
-
 const projectRoute = require('./routes/project');
 projectRoute.setPool(pool);
 app.use('/project', projectRoute.router);
@@ -84,19 +80,19 @@ function authBearerMiddleware(req, res, next) {
   next()
 }
 
-// === PROTECT POST/PUT FOR ALL ROUTES ===
+// === PROTECT PUT ONLY FOR /users, POST/PUT FOR OTHERS ===
 const protectedRoutes = [
-  '/project',
-  '/project_d',
-  '/project_detail',
-  '/orang',
-  '/orang_d',
-  '/users',
-  '/meta',
+  { route: '/project', methods: ['POST', 'PUT'] },
+  { route: '/project_d', methods: ['POST', 'PUT'] },
+  { route: '/project_detail', methods: ['POST', 'PUT'] },
+  { route: '/orang', methods: ['POST', 'PUT'] },
+  { route: '/orang_d', methods: ['POST', 'PUT'] },
+  { route: '/meta', methods: ['POST', 'PUT'] },
+  { route: '/users', methods: ['PUT'] }, // Only protect PUT for /users
 ]
-protectedRoutes.forEach(route => {
+protectedRoutes.forEach(({ route, methods }) => {
   app.use(route, (req, res, next) => {
-    if (['POST', 'PUT'].includes(req.method)) {
+    if (methods.includes(req.method)) {
       return authBearerMiddleware(req, res, next)
     }
     next()
