@@ -220,16 +220,12 @@ router.delete('/:uuid', async (req, res) => {
     // Hapus file header
     if (headerPath) {
       const filePath = path.join(__dirname, '../uploads', headerPath);
-      if (fs.existsSync(filePath)) {
-        try { fs.unlinkSync(filePath); } catch (e) { /* ignore */ }
-      }
+      try { await safeUnlink(filePath); } catch (e) { /* ignore */ }
     }
     // Hapus file detail
     for (const img of detailImages) {
       const filePath = path.join(__dirname, '../uploads', img);
-      if (fs.existsSync(filePath)) {
-        try { fs.unlinkSync(filePath); } catch (e) { /* ignore */ }
-      }
+      try { await safeUnlink(filePath); } catch (e) { /* ignore */ }
     }
     res.json({ message: 'Deleted', project: deleted });
   } catch (err) {

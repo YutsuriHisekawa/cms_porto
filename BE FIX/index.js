@@ -71,6 +71,47 @@ project_detailRoute.setPool(pool);
 app.use('/project_detail', project_detailRoute.router);
 
 
+// === MIDDLEWARE: AUTH BEARER TOKEN ===
+function authBearerMiddleware(req, res, next) {
+  const authHeader = req.headers['authorization'] || req.headers['Authorization']
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Missing or invalid Authorization header' })
+  }
+  const token = authHeader.split(' ')[1]
+  if (!token) {
+    return res.status(401).json({ error: 'Invalid Bearer token' })
+  }
+  next()
+}
+
+// === PROTECT POST/PUT FOR ALL ROUTES ===
+const protectedRoutes = [
+  '/project',
+  '/project_d',
+  '/project_detail',
+  '/orang',
+  '/orang_d',
+  '/users',
+  '/meta',
+]
+protectedRoutes.forEach(route => {
+  app.use(route, (req, res, next) => {
+    if (['POST', 'PUT'].includes(req.method)) {
+      return authBearerMiddleware(req, res, next)
+    }
+    next()
+  })
+})
+
+// Attach routers after protection
+app.use('/project', projectRoute.router)
+app.use('/project_d', project_dRoute.router)
+app.use('/project_detail', project_detailRoute.router)
+app.use('/orang', orangRoute.router)
+app.use('/orang_d', orang_dRoute.router)
+app.use('/users', usersRoute.router)
+app.use('/meta', metaRoute.router)
+
 async function startServer() {
     console.log("Memulai inisialisasi server...");
     app.listen(PORT, () => {
