@@ -52,7 +52,7 @@ app.use('/project', projectRoute.router);
 
 const project_dRoute = require('./routes/project_d');
 project_dRoute.setPool(pool);
-app.use('/project-d', project_dRoute.router);
+app.use('/project_d', project_dRoute.router);
 
 const metaRoute = require('./routes/meta');
 metaRoute.setPool(pool);
@@ -60,11 +60,15 @@ app.use('/meta', metaRoute.router);
 
 const orang_dRoute = require('./routes/orang_d');
 orang_dRoute.setPool(pool);
-app.use('/orang-d', orang_dRoute.router);
+app.use('/orang_d', orang_dRoute.router);
 
 const orangRoute = require('./routes/orang');
 orangRoute.setPool(pool);
 app.use('/orang', orangRoute.router);
+
+const project_detailRoute = require('./routes/projectDetail');
+project_detailRoute.setPool(pool);
+app.use('/project_detail', project_detailRoute.router);
 
 
 async function startServer() {

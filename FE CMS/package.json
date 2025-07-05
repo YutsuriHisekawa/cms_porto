@@ -16,6 +16,8 @@
     "@vee-validate/nuxt": "^4.13.2",
     "@vee-validate/yup": "^4.13.2",
     "@vueuse/nuxt": "^11.0.3",
+    "dompurify": "^3.2.6",
+    "jwt-decode": "^4.0.0",
     "nuxt": "^3.13.0",
     "pinia": "^2.1.7",
     "sweetalert2": "^11.22.2",

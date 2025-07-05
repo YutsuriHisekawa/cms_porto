@@ -35,11 +35,11 @@ async function authMiddleware(req, res, next) {
     }
 }
 
-// Validate numeric ID parameter middleware
-function validateIdParam(req, res, next) {
+// Validate UUID parameter middleware
+function validateUuidParam(req, res, next) {
     const { id } = req.params;
-    if (!/^\d+$/.test(id)) {
-        return res.status(400).json({ error: 'ID must be numeric' });
+    if (!/^[0-9a-fA-F-]{36}$/.test(id)) {
+        return res.status(400).json({ error: 'ID must be a valid UUID' });
     }
     next();
 }
@@ -123,11 +123,11 @@ router.post('/', authMiddleware, async (req, res) => {
 // });
 
 // Update user (requires auth, super admin can update any user)
-router.put('/:id', authMiddleware, validateIdParam, async (req, res) => {
+router.put('/:id', authMiddleware, validateUuidParam, async (req, res) => {
     const { id } = req.params;
     const { nama, email, password } = req.body;
-    // Super admin (id 1) boleh update siapa saja, user lain hanya boleh update dirinya sendiri
-    if (req.user.id !== 1 && parseInt(id) !== req.user.id) {
+    // Super admin (id === 'uuid-superadmin') boleh update siapa saja, user lain hanya boleh update dirinya sendiri
+    if (req.user.id !== id) {
         return res.status(403).json({ error: 'Forbidden: cannot update other users' });
     }
     if (!nama && !email && !password) {
@@ -166,7 +166,7 @@ router.put('/:id', authMiddleware, validateIdParam, async (req, res) => {
 });
 
 // Get user by ID (requires auth)
-router.get('/:id', authMiddleware, validateIdParam, async (req, res) => {
+router.get('/:id', authMiddleware, validateUuidParam, async (req, res) => {
     const { id } = req.params;
     try {
         const result = await pool.query(
@@ -184,7 +184,7 @@ router.get('/:id', authMiddleware, validateIdParam, async (req, res) => {
 });
 
 // Delete user (hanya super admin/role MASTER yang boleh)
-router.delete('/:id', authMiddleware, validateIdParam, async (req, res) => {
+router.delete('/:id', authMiddleware, validateUuidParam, async (req, res) => {
     const { id } = req.params;
     // Hanya user dengan role MASTER yang boleh delete user
     const userResult = await pool.query('SELECT * FROM users WHERE id = $1', [req.user.id]);

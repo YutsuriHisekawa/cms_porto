@@ -19,8 +19,21 @@ async function getAllDetails(pool) {
     return rows;
 }
 
+async function deleteProjectDetailsExcept(pool, project_uuid, keepUuids) {
+    if (!Array.isArray(keepUuids) || keepUuids.length === 0) {
+        // Hapus semua detail jika tidak ada yang dipertahankan
+        await pool.query('DELETE FROM project_d WHERE project_uuid = $1', [project_uuid]);
+    } else {
+        await pool.query(
+            `DELETE FROM project_d WHERE project_uuid = $1 AND uuid NOT IN (${keepUuids.map((_, i) => `$${i+2}`).join(',')})`,
+            [project_uuid, ...keepUuids]
+        );
+    }
+}
+
 module.exports = {
     addProjectDetail,
     getAllDetails,
+    deleteProjectDetailsExcept,
     setPool
 };

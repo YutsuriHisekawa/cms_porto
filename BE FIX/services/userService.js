@@ -10,19 +10,27 @@ async function createUser(pool, { nama, username, email, password }) {
     }
     const salt = await bcrypt.genSalt(10);
     const password_hash = await bcrypt.hash(password, salt);
-    const insertQuery = `INSERT INTO users (nama, username, email, password_hash) VALUES ($1, $2, $3, $4) RETURNING id, nama, username, email, role, created_at`;
+    const insertQuery = `INSERT INTO users (nama, username, email, password_hash) VALUES ($1, $2, $3, $4) RETURNING id, nama, username, email, role, (created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta') AS created_at`;
     const values = [nama, username, email, password_hash];
     const result = await pool.query(insertQuery, values);
     return { user: result.rows[0] };
 }
 
 async function getAllUsers(pool) {
-    const { rows } = await pool.query('SELECT id, nama, username, email, role, created_at FROM users');
+    const { rows } = await pool.query(`
+      SELECT id, nama, username, email, role,
+        (created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta') AS created_at
+      FROM users
+    `);
     return rows;
 }
 
 async function getUserById(pool, id) {
-    const result = await pool.query('SELECT id, nama, username, email, role, created_at FROM users WHERE id = $1', [id]);
+    const result = await pool.query(`
+      SELECT id, nama, username, email, role,
+        (created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta') AS created_at
+      FROM users WHERE id = $1
+    `, [id]);
     if (result.rowCount === 0) {
         return null;
     }
@@ -48,7 +56,7 @@ async function updateUser(pool, id, { nama, email, password }) {
         fields.push(`password_hash = $${idx++}`);
         values.push(password_hash);
     }
-    updateQuery += fields.join(', ') + ` WHERE id = $${idx} RETURNING id, nama, username, email, role, created_at`;
+    updateQuery += fields.join(', ') + ` WHERE id = $${idx} RETURNING id, nama, username, email, role, (created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta') AS created_at`;
     values.push(id);
     const result = await pool.query(updateQuery, values);
     if (result.rowCount === 0) {
@@ -58,7 +66,9 @@ async function updateUser(pool, id, { nama, email, password }) {
 }
 
 async function deleteUser(pool, id) {
-    const result = await pool.query('DELETE FROM users WHERE id = $1 RETURNING id, nama, username, email, role, created_at', [id]);
+    const result = await pool.query(`
+      DELETE FROM users WHERE id = $1 RETURNING id, nama, username, email, role, (created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta') AS created_at
+    `, [id]);
     if (result.rowCount === 0) {
         return null;
     }

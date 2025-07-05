@@ -65,65 +65,121 @@
     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <PortfolioCard
         v-for="portfolio in filteredPortfolios"
-        :key="portfolio.id"
+        :key="portfolio.slug"
         :portfolio="portfolio"
         @edit="handleEditPortfolio"
         @delete="handleDeletePortfolio"
-      />
+      >
+        <template #header>
+          <NuxtLink :to="`/portfolios/${portfolio.slug}`">
+            <img
+              v-if="portfolio.upload_header"
+              :src="config.public.baseUrl + portfolio.upload_header"
+              alt="Header Image"
+              class="w-full h-40 object-cover rounded-t-lg mb-2"
+            />
+          </NuxtLink>
+        </template>
+      </PortfolioCard>
     </div>
   </div>
 </template>
 
 <script setup>
+import { ref, computed, onMounted } from 'vue'
+import { useRuntimeConfig } from '#imports'
+import Swal from 'sweetalert2'
+
 definePageMeta({
   middleware: 'auth'
 })
 
-const { portfolios, isLoading, fetchPortfolios } = usePortfolioStore()
-const { success, error } = useToast()
-
+const config = useRuntimeConfig()
+const portfolios = ref([])
+const isLoading = ref(false)
 const searchQuery = ref('')
 const sortBy = ref('updated')
 
-const filteredPortfolios = computed(() => {
-  let filtered = [...portfolios]
+const fetchPortfolios = async () => {
+  isLoading.value = true
+  try {
+    const data = await $fetch('/project', {
+      baseURL: config.public.baseUrl,
+      method: 'GET',
+      credentials: 'include'
+    })
+    portfolios.value = data
+  } catch (err) {
+    Swal.fire({ icon: 'error', title: 'Failed to fetch projects', text: err?.message || 'Unknown error' })
+  } finally {
+    isLoading.value = false
+  }
+}
 
-  // Search filter
+const filteredPortfolios = computed(() => {
+  let filtered = [...portfolios.value]
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(portfolio => 
+    filtered = filtered.filter(portfolio =>
       portfolio.title.toLowerCase().includes(query) ||
       portfolio.description.toLowerCase().includes(query)
     )
   }
-
-  // Sort
+  // Hanya portfolio yang punya slug
+  filtered = filtered.filter(p => !!p.slug)
   filtered.sort((a, b) => {
     switch (sortBy.value) {
       case 'updated':
-        return new Date(b.updatedAt) - new Date(a.updatedAt)
+        return new Date(b.updatedAt || b.created_at) - new Date(a.updatedAt || a.created_at)
       case 'created':
-        return new Date(b.createdAt) - new Date(a.createdAt)
+        return new Date(b.createdAt || b.created_at) - new Date(a.createdAt || a.created_at)
       case 'name':
         return a.title.localeCompare(b.title)
       default:
         return 0
     }
   })
-
   return filtered
 })
 
 const handleEditPortfolio = (portfolio) => {
-  navigateTo(`/portfolios/${portfolio.id}/edit`)
+  navigateTo(`/portfolios/${portfolio.slug}/edit`)
 }
 
-const handleDeletePortfolio = (portfolio) => {
-  // TODO: Implement delete confirmation modal
-  console.log('Delete portfolio:', portfolio)
+const handleDeletePortfolio = async (portfolio) => {
+  const result = await Swal.fire({
+    title: 'Delete this portfolio?',
+    text: `Are you sure you want to delete "${portfolio.title}"? This action cannot be undone!`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, delete',
+    cancelButtonText: 'Cancel',
+    reverseButtons: true,
+    focusCancel: true
+  })
+  if (result.isConfirmed) {
+    try {
+      await $fetch(`/project/${portfolio.uuid}`, {
+        baseURL: config.public.baseUrl,
+        method: 'DELETE',
+        credentials: 'include'
+      })
+      await fetchPortfolios()
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: 'Portfolio deleted',
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true
+      })
+    } catch (err) {
+      Swal.fire({ icon: 'error', title: 'Failed to delete', text: err?.message || 'Unknown error' })
+    }
+  }
 }
 
-// Fetch portfolios on mount
 onMounted(() => {
   fetchPortfolios()
 })

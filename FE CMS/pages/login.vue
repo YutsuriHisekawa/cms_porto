@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen flex items-center justify-center ">
-    <div class="w-full max-w-md bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 relative">
+    <div v-if="!checkingAuth" class="w-full max-w-md bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 relative">
       <!-- Dark mode toggle -->
       <button
         class="absolute top-4 right-4 p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 shadow hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
@@ -78,6 +78,9 @@
       </div>
       <LoginErrorModal :show="showLoginError" @close="showLoginError = false" />
     </div>
+    <div v-else class="flex items-center justify-center min-h-screen">
+      <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-accent-600"></div>
+    </div>
   </div>
 </template>
 
@@ -86,6 +89,7 @@ import { ref, onMounted } from 'vue'
 import { useRuntimeConfig } from '#imports'
 import Swal from 'sweetalert2'
 import LoginErrorModal from '~/components/LoginErrorModal.vue'
+import { useAuthStore } from '~/stores/auth'
 import { navigateTo } from '#app'
 
 definePageMeta({ layout: 'auth' })
@@ -97,6 +101,31 @@ const errors = ref({ username: '', password: '' })
 const loading = ref(false)
 const showLoginError = ref(false)
 const isDark = ref(false)
+const checkingAuth = ref(true)
+
+const auth = useAuthStore()
+
+onMounted(async () => {
+  await auth.checkAuth()
+  // Cek expired token
+  if (auth.token) {
+    try {
+      const { exp } = auth.token
+      if (Date.now() >= exp * 1000) {
+        await auth.logout()
+        return
+      }
+    } catch {
+      await auth.logout()
+      return
+    }
+  }
+  if (auth.isAuthenticated) {
+    await navigateTo('/dashboard')
+  } else {
+    checkingAuth.value = false
+  }
+})
 
 const validateForm = () => {
   errors.value = { username: '', password: '' }
@@ -125,12 +154,12 @@ const handleLogin = async () => {
       body: { username: username.value, password: password.value },
       credentials: 'include'
     })
+    console.log('Login response:', response)
     if (response && response.token) {
       localStorage.setItem('auth', JSON.stringify(response))
       localStorage.setItem('auth-token', response.token)
       localStorage.setItem('user', JSON.stringify(response.user))
-      const { useAuthStore } = await import('~/stores/auth')
-      useAuthStore().checkAuth()
+      await auth.checkAuth()
       Swal.fire({
         toast: true,
         position: 'top-end',
@@ -148,11 +177,14 @@ const handleLogin = async () => {
       } else {
         showLoginError.value = true
       }
+      console.error('Login error:', msg)
     } else {
       showLoginError.value = true
+      console.error('Unknown login error:', response)
     }
   } catch (err) {
     showLoginError.value = true
+    console.error('Login exception:', err)
   } finally {
     loading.value = false
   }

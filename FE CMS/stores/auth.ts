@@ -95,43 +95,9 @@ export const useAuthStore = defineStore('auth', {
         const token = localStorage.getItem('auth-token')
         const user = localStorage.getItem('user')
         if (token && user) {
-          try {
-            // Validasi token ke backend
-            const config = useRuntimeConfig()
-            const response: any = await $fetch('/login/validate-token', {
-              baseURL: config.public.baseUrl,
-              method: 'POST',
-              body: { token },
-              credentials: 'include'
-            })
-            if (response && response.valid) {
-              this.token = token
-              this.user = JSON.parse(user)
-              this.isAuthenticated = true
-            } else {
-              if (showError && response && response.message) {
-                const Swal = (await import('sweetalert2')).default
-                Swal.fire({
-                  icon: 'error',
-                  title: 'TOKEN TIDAK VALID',
-                  text: response.message,
-                  confirmButtonColor: '#d33'
-                })
-              }
-              this.logout()
-            }
-          } catch (e) {
-            if (showError) {
-              const Swal = (await import('sweetalert2')).default
-              Swal.fire({
-                icon: 'error',
-                title: 'TOKEN TIDAK VALID',
-                text: 'Terjadi kesalahan saat validasi token.',
-                confirmButtonColor: '#d33'
-              })
-            }
-            this.logout()
-          }
+          this.token = token
+          this.user = JSON.parse(user)
+          this.isAuthenticated = true
         } else {
           this.logout()
         }

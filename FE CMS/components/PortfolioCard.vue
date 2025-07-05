@@ -1,5 +1,13 @@
 <template>
   <div class="card card-hover">
+    <div v-if="portfolio.upload_header" class="w-full aspect-[16/9] bg-gray-100 rounded-t-lg flex items-center justify-center overflow-hidden">
+      <img
+        :src="baseUrl + portfolio.upload_header"
+        alt="Header Image"
+        class="max-h-full max-w-full object-contain"
+        style="background: #f3f4f6;"
+      />
+    </div>
     <div class="p-6">
       <div class="flex items-start justify-between">
         <div class="flex-1">
@@ -10,8 +18,7 @@
             {{ portfolio.description }}
           </p>
           <div class="flex items-center space-x-4 text-sm text-primary-500 dark:text-primary-500">
-            <span>{{ (portfolio.projects && Array.isArray(portfolio.projects)) ? portfolio.projects.length : 0 }} projects</span>
-            <span>{{ formatDate(portfolio.updatedAt) }}</span>
+            <span>{{ formatDate(portfolio.updated_at) }}</span>
           </div>
         </div>
         <div class="flex items-center space-x-2 ml-4">
@@ -36,7 +43,8 @@
     </div>
     <div class="px-6 pb-6">
       <NuxtLink
-        :to="`/portfolios/${portfolio.id}`"
+        v-if="portfolio.slug"
+        :to="`/portfolios/${portfolio.slug}`"
         class="btn btn-primary w-full"
       >
         View Portfolio
@@ -46,12 +54,19 @@
 </template>
 
 <script setup lang="ts">
+import { useRuntimeConfig } from '#imports'
+const baseUrl = useRuntimeConfig().public.baseUrl || ''
+
 interface Portfolio {
-  id: string
+  id?: string
+  uuid: string
   title: string
   description: string
-  projects: any[]
-  updatedAt: string
+  updated_at: string
+  created_at?: string
+  user_id?: string
+  upload_header?: string 
+  slug: string
 }
 
 defineProps<{
@@ -64,10 +79,12 @@ defineEmits<{
 }>()
 
 const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  })
+  if (!dateString) return '-'
+  const d = new Date(dateString)
+  if (isNaN(d.getTime())) return '-'
+  const day = String(d.getDate()).padStart(2, '0')
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const year = d.getFullYear()
+  return `${day}/${month}/${year}`
 }
 </script>

@@ -1,8 +1,11 @@
 <script setup>
 // Redirect to dashboard if authenticated, otherwise to login
-const { isAuthenticated } = useAuthStore()
+import { useAuthStore } from '~/stores/auth'
+import { navigateTo } from '#app'
 
-if (isAuthenticated) {
+const auth = useAuthStore()
+
+if (auth.isAuthenticated) {
   await navigateTo('/dashboard')
 } else {
   await navigateTo('/login')
