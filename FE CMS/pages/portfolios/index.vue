@@ -35,9 +35,16 @@
       </div>
     </div>
 
-    <!-- Loading State -->
-    <div v-if="isLoading" class="flex items-center justify-center py-12">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-accent-600"></div>
+    <!-- Shimmer Loading State -->
+    <div v-if="isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div v-for="n in 6" :key="n" class="animate-pulse bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
+        <div class="h-40 bg-gray-200 dark:bg-gray-700 w-full"></div>
+        <div class="p-4">
+          <div class="h-6 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mb-2"></div>
+          <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-4"></div>
+          <div class="h-8 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+        </div>
+      </div>
     </div>
 
     <!-- Empty State -->
@@ -103,10 +110,12 @@ const sortBy = ref('updated')
 const fetchPortfolios = async () => {
   isLoading.value = true
   try {
+    const token = localStorage.getItem('auth-token')
     const data = await $fetch('/project', {
       baseURL: config.public.baseUrl,
       method: 'GET',
-      credentials: 'include'
+      credentials: 'include',
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined
     })
     portfolios.value = data
   } catch (err) {
@@ -159,10 +168,12 @@ const handleDeletePortfolio = async (portfolio) => {
   })
   if (result.isConfirmed) {
     try {
+      const token = localStorage.getItem('auth-token')
       await $fetch(`/project/${portfolio.uuid}`, {
         baseURL: config.public.baseUrl,
         method: 'DELETE',
-        credentials: 'include'
+        credentials: 'include',
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined
       })
       await fetchPortfolios()
       Swal.fire({
@@ -184,3 +195,14 @@ onMounted(() => {
   fetchPortfolios()
 })
 </script>
+
+<style scoped>
+/* ...existing code... */
+.animate-pulse {
+  animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+</style>

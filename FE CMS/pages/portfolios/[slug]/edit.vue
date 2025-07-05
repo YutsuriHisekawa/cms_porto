@@ -19,10 +19,12 @@ const projectDetails = ref([])
 const fetchPortfolio = async () => {
   try {
     isSubmitting.value = true
+    const token = localStorage.getItem('auth-token')
     const data = await $fetch(`/project/${route.params.slug}`, {
       baseURL: config.public.baseUrl,
       method: 'GET',
-      credentials: 'include'
+      credentials: 'include',
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
     })
     title.value = data.title
     description.value = data.description
@@ -156,11 +158,13 @@ const onSave = async () => {
         fd.append(`project_d_picture_${i}`, d.picture)
       }
     })
+    const token = localStorage.getItem('auth-token')
     await $fetch(`/project/${route.params.slug}`, {
       baseURL: config.public.baseUrl,
       method: 'PUT',
       body: fd,
-      credentials: 'include'
+      credentials: 'include',
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
     })
     await Swal.close()
     await Swal.fire({ icon: 'success', title: 'Portfolio updated!' })

@@ -127,10 +127,9 @@ function dataURLtoFile(dataurl, filename) {
   return new File([u8arr], filename, { type: mime })
 }
 
-async function onSave() {
+const onSave = async () => {
   if (!validate()) return
   isSubmitting.value = true
-
   const swalLoading = Swal.fire({
     title: 'Uploading...',
     allowOutsideClick: false,
@@ -138,7 +137,6 @@ async function onSave() {
       Swal.showLoading()
     }
   })
-
   try {
     // Get user ID from localStorage
     const userStr = localStorage.getItem('user')
@@ -183,11 +181,13 @@ async function onSave() {
     })
     formData.append('project_d_count', projectDetails.value.length)
 
+    const token = localStorage.getItem('auth-token')
     const response = await $fetch('/project', {
       baseURL: config.public.baseUrl,
       method: 'POST',
       body: formData,
-      credentials: 'include'
+      credentials: 'include',
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
     })
 
     await Swal.close()
