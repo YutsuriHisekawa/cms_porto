@@ -5,6 +5,7 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const { Pool } = require('pg');
 const path = require('path'); 
+const fileUpload = require('express-fileupload');
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use(cors({
 }));
 
 app.use(express.json());
+app.use(fileUpload());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); 
 
 

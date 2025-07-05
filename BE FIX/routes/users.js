@@ -86,15 +86,68 @@ router.post('/', async (req, res) => {
     }
 });
 
+// Update user by slug (for profile update, including image upload)
+router.put('/:slug', authMiddleware, async (req, res) => {
+    const { slug } = req.params;
+    try {
+        // Find user by slug
+        const userResult = await pool.query('SELECT * FROM users WHERE slug = $1', [slug]);
+        if (userResult.rowCount === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        const user = userResult.rows[0];
+        // Only allow user to update themselves
+        if (req.user.id !== user.id) {
+            return res.status(403).json({ error: 'Forbidden: cannot update other users' });
+        }
+        let profile_picture_url = user.profile_picture;
+        // Jika multipart/form-data dan ada file
+        if (req.is('multipart/form-data') && req.files && req.files.profile_picture) {
+            const file = req.files.profile_picture;
+            const fs = require('fs');
+            const path = require('path');
+            const uploadDir = path.join(__dirname, '../uploads');
+            if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+            const filename = `profile_${user.id}_${Date.now()}` + path.extname(file.name);
+            const filepath = path.join(uploadDir, filename);
+            fs.writeFileSync(filepath, file.data);
+            profile_picture_url = `/uploads/${filename}`;
+        }
+        // Ambil data update dari body (bisa JSON atau form)
+        const { nama_lengkap, username, email, description } = req.body;
+        const fields = [];
+        const values = [];
+        let idx = 1;
+        if (nama_lengkap) { fields.push(`nama_lengkap = $${idx++}`); values.push(nama_lengkap); }
+        if (username) { fields.push(`username = $${idx++}`); values.push(username); }
+        if (email) { fields.push(`email = $${idx++}`); values.push(email); }
+        if (description) { fields.push(`description = $${idx++}`); values.push(description); }
+        if (profile_picture_url !== user.profile_picture) {
+            fields.push(`profile_picture = $${idx++}`); values.push(profile_picture_url);
+        }
+        if (fields.length === 0) {
+            return res.status(400).json({ error: 'Tidak ada data yang diubah' });
+        }
+        const updateQuery = `UPDATE users SET ${fields.join(', ')}, updated_at = NOW() WHERE id = $${idx} RETURNING id, nama_lengkap, username, email, role, profile_picture, description, created_at, updated_at, slug`;
+        values.push(user.id);
+        const result = await pool.query(updateQuery, values);
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
 // Update user (requires auth, super admin can update any user)
 router.put('/:id', authMiddleware, validateUuidParam, async (req, res) => {
     const { id } = req.params;
-    const { nama, email, password } = req.body;
-    // Super admin (id === 'uuid-superadmin') boleh update siapa saja, user lain hanya boleh update dirinya sendiri
+    // Accept all possible updatable fields
+    const { nama_lengkap, username, email, password, description, profile_picture } = req.body;
+    // Only allow user to update themselves (unless super admin logic is added)
     if (req.user.id !== id) {
         return res.status(403).json({ error: 'Forbidden: cannot update other users' });
     }
-    if (!nama && !email && !password) {
+    if (!nama_lengkap && !username && !email && !password && !description && !profile_picture) {
         return res.status(400).json({ error: 'At least one field must be provided' });
     }
     try {
@@ -102,13 +155,25 @@ router.put('/:id', authMiddleware, validateUuidParam, async (req, res) => {
         const fields = [];
         const values = [];
         let idx = 1;
-        if (nama) {
-            fields.push(`nama = $${idx++}`);
-            values.push(nama);
+        if (nama_lengkap) {
+            fields.push(`nama_lengkap = $${idx++}`);
+            values.push(nama_lengkap);
+        }
+        if (username) {
+            fields.push(`username = $${idx++}`);
+            values.push(username);
         }
         if (email) {
             fields.push(`email = $${idx++}`);
             values.push(email);
+        }
+        if (description) {
+            fields.push(`description = $${idx++}`);
+            values.push(description);
+        }
+        if (profile_picture) {
+            fields.push(`profile_picture = $${idx++}`);
+            values.push(profile_picture);
         }
         if (password) {
             const salt = await bcrypt.genSalt(10);
@@ -116,7 +181,7 @@ router.put('/:id', authMiddleware, validateUuidParam, async (req, res) => {
             fields.push(`password_hash = $${idx++}`);
             values.push(password_hash);
         }
-        updateQuery += fields.join(', ') + ` WHERE id = $${idx} RETURNING id, nama, username, email, role, created_at`;
+        updateQuery += fields.join(', ') + ` WHERE id = $${idx} RETURNING id, nama_lengkap, username, email, role, profile_picture, description, created_at, updated_at, slug`;
         values.push(id);
         const result = await pool.query(updateQuery, values);
         if (result.rowCount === 0) {
@@ -161,6 +226,40 @@ router.delete('/:id', authMiddleware, validateUuidParam, async (req, res) => {
             return res.status(404).json({ error: 'User tidak ditemukan' });
         }
         res.json({ message: 'User berhasil dihapus', user: result.rows[0] });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// PATCH /users/:slug/password - Ganti password user
+router.patch('/:slug/password', authMiddleware, async (req, res) => {
+    const { slug } = req.params;
+    const { oldPassword, newPassword, confirmPassword } = req.body;
+    if (!oldPassword || !newPassword || !confirmPassword) {
+        return res.status(400).json({ error: 'Semua field password wajib diisi.' });
+    }
+    if (newPassword !== confirmPassword) {
+        return res.status(400).json({ error: 'Password baru dan konfirmasi tidak sama.' });
+    }
+    try {
+        const userResult = await pool.query('SELECT * FROM users WHERE slug = $1', [slug]);
+        if (userResult.rowCount === 0) {
+            return res.status(404).json({ error: 'User tidak ditemukan.' });
+        }
+        const user = userResult.rows[0];
+        // Hanya user sendiri yang boleh ganti password
+        if (req.user.id !== user.id) {
+            return res.status(403).json({ error: 'Forbidden: tidak boleh ganti password user lain.' });
+        }
+        const match = await bcrypt.compare(oldPassword, user.password_hash);
+        if (!match) {
+            return res.status(400).json({ error: 'Password lama salah.' });
+        }
+        const salt = await bcrypt.genSalt(10);
+        const password_hash = await bcrypt.hash(newPassword, salt);
+        await pool.query('UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2', [password_hash, user.id]);
+        res.json({ message: 'Password berhasil diubah.' });
     } catch (err) {
         console.error(err.message);
         res.status(500).json({ error: 'Server error' });

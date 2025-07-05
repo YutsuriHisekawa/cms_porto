@@ -31,9 +31,9 @@
     <div class="p-4 border-t border-primary-200 dark:border-primary-800 mt-auto">
       <div class="flex items-center space-x-3">
         <img
-          :src="user?.avatar || 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=1'"
+          :src="getProfilePictureUrl(user?.profile_picture)"
           :alt="user?.nama"
-          class="w-8 h-8 rounded-full"
+          class="w-8 h-8 rounded-full object-cover object-center"
         />
         <div class="flex-1 min-w-0">
           <p class="text-sm font-medium text-primary-900 dark:text-primary-100 truncate">
@@ -81,9 +81,9 @@
     <div class="p-4 border-t border-primary-200 dark:border-primary-800 mt-auto">
       <div class="flex items-center space-x-3">
         <img
-          :src="user?.avatar || 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=1'"
+          :src="getProfilePictureUrl(user?.profile_picture)"
           :alt="user?.name"
-          class="w-8 h-8 rounded-full"
+          class="w-8 h-8 rounded-full object-cover object-center"
         />
         <div class="flex-1 min-w-0">
           <p class="text-sm font-medium text-primary-900 dark:text-primary-100 truncate">
@@ -112,10 +112,18 @@ import {
   PlusIcon, 
   CogIcon 
 } from '@heroicons/vue/24/outline'
+import { useRuntimeConfig } from '#imports'
 
 const { user } = useAuthStore()
 
 const isOpen = ref(false)
+
+const config = useRuntimeConfig()
+function getProfilePictureUrl(pic) {
+  if (!pic) return 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=1'
+  if (pic.startsWith('http')) return pic
+  return config.public.baseUrl.replace(/\/$/, '') + pic
+}
 
 const navigationItems = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },

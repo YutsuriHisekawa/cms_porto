@@ -45,9 +45,9 @@
             class="flex items-center space-x-2 p-2 rounded-md text-primary-600 hover:text-primary-900 hover:bg-primary-100 dark:text-primary-400 dark:hover:text-primary-100 dark:hover:bg-primary-800 transition-colors"
           >
             <img
-              :src="user?.avatar || 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=1'"
+              :src="getProfilePictureUrl(user?.profile_picture)"
               :alt="user?.name"
-              class="w-8 h-8 rounded-full"
+              class="w-8 h-8 rounded-full object-cover object-center"
             />
             <span class="hidden sm:block text-sm font-medium">{{ user?.name }}</span>
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -79,8 +79,16 @@
 
 <script setup>
 import Swal from 'sweetalert2'
+import { useRuntimeConfig } from '#imports'
 const { isDark, toggleTheme } = useTheme()
 const { user, isAuthenticated, logout } = useAuthStore()
+
+const config = useRuntimeConfig()
+function getProfilePictureUrl(pic) {
+  if (!pic) return 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=1'
+  if (pic.startsWith('http')) return pic
+  return config.public.baseUrl.replace(/\/$/, '') + pic
+}
 
 const Toast = Swal.mixin({
   toast: true,
