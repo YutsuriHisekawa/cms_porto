@@ -129,7 +129,7 @@ const navigationItems = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
   { name: 'Portfolios', href: '/portfolios', icon: FolderIcon },
   { name: 'Create Portfolio', href: '/portfolios/create', icon: PlusIcon },
-  { name: 'Settings', href: '/settings', icon: CogIcon }
+  { name: 'Settings', href: '/setting', icon: CogIcon }
 ]
 
 const closeSidebar = () => {

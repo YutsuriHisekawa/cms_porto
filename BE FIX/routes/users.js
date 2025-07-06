@@ -48,7 +48,7 @@ function validateUuidParam(req, res, next) {
 router.get('/', async (req, res) => {
     try {
         const { rows } = await pool.query(
-            'SELECT id, nama, nama_lengkap, username, email, role, profile_picture, description, created_at, updated_at, slug FROM users'
+            'SELECT id, nama, nama_lengkap, username, email, role, profile_picture, description, created_at, updated_at, slug, no_telp FROM users'
         );
         res.json(rows);
     } catch (err) {
@@ -114,14 +114,16 @@ router.put('/:slug', authMiddleware, async (req, res) => {
             profile_picture_url = `/uploads/${filename}`;
         }
         // Ambil data update dari body (bisa JSON atau form)
-        const { nama_lengkap, username, email, description } = req.body;
+        const { nama, nama_lengkap, username, email, description, no_telp } = req.body;
         const fields = [];
         const values = [];
         let idx = 1;
+        if (nama) { fields.push(`nama = $${idx++}`); values.push(nama); }
         if (nama_lengkap) { fields.push(`nama_lengkap = $${idx++}`); values.push(nama_lengkap); }
         if (username) { fields.push(`username = $${idx++}`); values.push(username); }
         if (email) { fields.push(`email = $${idx++}`); values.push(email); }
         if (description) { fields.push(`description = $${idx++}`); values.push(description); }
+        if (no_telp !== undefined) { fields.push(`no_telp = $${idx++}`); values.push(no_telp); }
         if (profile_picture_url !== user.profile_picture) {
             fields.push(`profile_picture = $${idx++}`); values.push(profile_picture_url);
         }
@@ -199,7 +201,7 @@ router.get('/:slug', async (req, res) => {
     const { slug } = req.params;
     try {
         const result = await pool.query(
-            'SELECT id, nama, nama_lengkap, username, email, role, profile_picture, description, created_at, updated_at, slug FROM users WHERE slug = $1',
+            'SELECT id, nama, nama_lengkap, username, email, role, profile_picture, description, created_at, updated_at, slug, no_telp FROM users WHERE slug = $1',
             [slug]
         );
         if (result.rowCount === 0) {

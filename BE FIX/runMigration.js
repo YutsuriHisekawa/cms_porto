@@ -6,7 +6,7 @@ require('dotenv').config();
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 async function runMigration() {
-  const sqlPath = path.join(__dirname, 'migrations/20250705_alter_users_add_slug.sql');
+  const sqlPath = path.join(__dirname, 'migrations/20250706_alter_users_add_no_telp.sql');
   if (!fs.existsSync(sqlPath)) {
     console.error('File migrasi tidak ditemukan:', sqlPath);
     process.exit(1);

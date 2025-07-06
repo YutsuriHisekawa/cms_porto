@@ -100,7 +100,7 @@ router.get('/with-detail/:table', async (req, res) => {
     });
 
     // Cari tabel detail (one-to-many, misal project_d)
-    const detailTables = await pool.query(`
+    let detailTables = await pool.query(`
       SELECT
         tc.table_name AS detail_table,
         kcu.column_name AS detail_column
@@ -113,7 +113,22 @@ router.get('/with-detail/:table', async (req, res) => {
         AND ccu.table_name = $1
     `, [table]);
 
-    for (const detail of detailTables.rows) {
+    // Filter detailTables jika table = users, exclude project, project_d, project_detail
+    let filteredDetailTables = detailTables.rows;
+    if (table === 'users') {
+      const exclude = ['project', 'project_d', 'project_detail'];
+      filteredDetailTables = detailTables.rows.filter(dt => !exclude.includes(dt.detail_table));
+    }
+
+    // Tambahkan skill_d dan sosial_d jika table = users
+    let extraDetails = [];
+    if (table === 'users') {
+      extraDetails = [
+        { detail_table: 'skill_d', detail_column: 'user_id' },
+        { detail_table: 'sosial_d', detail_column: 'user_id' }
+      ];
+    }
+    for (const detail of [...filteredDetailTables, ...extraDetails]) {
       // Ambil metadata detail
       const detailCols = await pool.query(`
         SELECT column_name, data_type, is_nullable
