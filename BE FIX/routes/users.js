@@ -76,8 +76,18 @@ router.post('/', async (req, res) => {
         }
         const salt = await bcrypt.genSalt(10);
         const password_hash = await bcrypt.hash(password, salt);
-        const insertQuery = `INSERT INTO users (nama_lengkap, username, email, password_hash, role) VALUES ($1, $2, $3, $4, 'USER') RETURNING id, nama_lengkap, username, email, role, created_at`;
-        const values = [nama_lengkap, username, email, password_hash];
+        // Generate slug unik dari username (atau nama_lengkap jika username kosong)
+        let baseSlug = slugify(username || nama_lengkap);
+        let slug = baseSlug;
+        let slugIndex = 1;
+        // Cek slug unik
+        while (true) {
+          const slugCheck = await pool.query('SELECT 1 FROM users WHERE slug = $1', [slug]);
+          if (slugCheck.rowCount === 0) break;
+          slug = `${baseSlug}-${slugIndex++}`;
+        }
+        const insertQuery = `INSERT INTO users (nama_lengkap, username, email, password_hash, role, slug) VALUES ($1, $2, $3, $4, 'USER', $5) RETURNING id, nama_lengkap, username, email, role, created_at, slug`;
+        const values = [nama_lengkap, username, email, password_hash, slug];
         const result = await pool.query(insertQuery, values);
         res.status(201).json(result.rows[0]);
     } catch (err) {
