@@ -600,6 +600,21 @@ const SocialIcon = defineComponent({
 })
 
 // Register SocialIcon locally for template usage
+
+function addSkill() {
+  if (!editUser.value.skill_d) editUser.value.skill_d = []
+  editUser.value.skill_d.push({ skill_name: '', skill_level: '' })
+}
+function removeSkill(idx) {
+  if (editUser.value.skill_d) editUser.value.skill_d.splice(idx, 1)
+}
+function addSocial() {
+  if (!editUser.value.sosial_d) editUser.value.sosial_d = []
+  editUser.value.sosial_d.push({ platform: '', url: '' })
+}
+function removeSocial(idx) {
+  if (editUser.value.sosial_d) editUser.value.sosial_d.splice(idx, 1)
+}
 </script>
 
 <style scoped>

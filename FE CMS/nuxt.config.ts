@@ -5,7 +5,8 @@ export default defineNuxtConfig({
     '@nuxtjs/tailwindcss',
     '@pinia/nuxt',
     '@vueuse/nuxt',
-    '@vee-validate/nuxt'
+    '@vee-validate/nuxt',
+    '@nuxt/icon'
   ],
   css: ['~/assets/css/main.css'],
   app: {
