@@ -150,7 +150,7 @@ const showConfirmPassword = ref(false)
 const errors = ref({})
 const isSubmitting = ref(false)
 
-function validate() {
+function validateRegister() {
   const err = {}
   if (!nama_lengkap.value || nama_lengkap.value.length < 2) err.nama_lengkap = 'Full name must be at least 2 characters'
   if (!username.value || username.value.length < 3) err.username = 'Username must be at least 3 characters'
@@ -164,7 +164,7 @@ function validate() {
 
 async function onSubmit(e) {
   e.preventDefault()
-  if (!validate()) return
+  if (!validateRegister()) return
   isSubmitting.value = true
   try {
     const config = useRuntimeConfig()

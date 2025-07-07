@@ -124,7 +124,7 @@ function closePreview() {
   previewImage.value = null
 }
 
-const validate = () => {
+const validatePortfolioEdit = () => {
   errors.value = { title: '', description: '', upload_header: '' }
   let valid = true
   if (!title.value || title.value.length < 2) {
@@ -139,7 +139,7 @@ const validate = () => {
 }
 
 const onSave = async () => {
-  if (!validate()) return
+  if (!validatePortfolioEdit()) return
   isSubmitting.value = true
   const swalLoading = Swal.fire({
     title: 'Saving...',

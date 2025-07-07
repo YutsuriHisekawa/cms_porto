@@ -100,7 +100,7 @@ const onDetailFileChange = (e, idx) => {
   }
 }
 
-const validate = () => {
+const validatePortfolioCreate = () => {
   errors.value = { title: '', description: '', upload_header: '' }
   let valid = true
   if (!title.value || title.value.length < 2) {
@@ -128,7 +128,7 @@ function dataURLtoFile(dataurl, filename) {
 }
 
 const onSave = async () => {
-  if (!validate()) return
+  if (!validatePortfolioCreate()) return
   isSubmitting.value = true
   const swalLoading = Swal.fire({
     title: 'Uploading...',

@@ -217,7 +217,6 @@ function setCoverImage(base64) {
   if (typeof window !== 'undefined' && window.localStorage) {
     localStorage.setItem('cover-image', base64)
     coverImage.value = base64
-    // Cek rasio gambar setelah upload
     checkCoverImageRatio(base64)
   }
 }
@@ -225,7 +224,6 @@ function setCoverImage(base64) {
 function checkCoverImageRatio(base64) {
   const img = new window.Image()
   img.onload = function () {
-    // Rasio container: 5:1 (misal 1200x240)
     const containerRatio = 5
     const imgRatio = img.width / img.height
     if (imgRatio < containerRatio) {
@@ -238,6 +236,13 @@ function checkCoverImageRatio(base64) {
 }
 
 onMounted(async () => {
+  // Pastikan Pinia store auth.user selalu sync dengan localStorage
+  if (!auth.user && typeof window !== 'undefined') {
+    const userStr = localStorage.getItem('user')
+    if (userStr) {
+      auth.user = JSON.parse(userStr)
+    }
+  }
   try {
     const authUser = JSON.parse(localStorage.getItem('user'))
     if (!authUser || !authUser.id) throw new Error('No user found')

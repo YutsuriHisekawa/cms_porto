@@ -14,11 +14,25 @@ interface AuthState {
 }
 
 export const useAuthStore = defineStore('auth', {
-  state: (): AuthState => ({
-    user: null,
-    token: null,
-    isAuthenticated: false
-  }),
+  state: (): AuthState => {
+    let user = null
+    let token = null
+    let isAuthenticated = false
+    if (typeof window !== 'undefined') {
+      const userStr = localStorage.getItem('user')
+      const tokenStr = localStorage.getItem('auth-token')
+      if (userStr && tokenStr) {
+        user = JSON.parse(userStr)
+        token = tokenStr
+        isAuthenticated = true
+      }
+    }
+    return {
+      user,
+      token,
+      isAuthenticated
+    }
+  },
 
   actions: {
     async login(credentials: { email: string; password: string }) {

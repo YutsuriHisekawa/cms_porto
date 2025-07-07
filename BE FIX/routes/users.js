@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const JWT_SECRET = process.env.JWT_SECRET || 'secretkey';
 const defaultUpload = require('multer')({ dest: 'uploads/' });
+const slugify = (str) => str.toString().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
 
 // Pool must be passed from the main app
 let pool;

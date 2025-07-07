@@ -102,7 +102,7 @@
               </div>
               <span class="font-medium text-gray-700 dark:text-gray-300">New Portfolio</span>
             </NuxtLink>
-            <NuxtLink to="/settings"
+            <NuxtLink to="/setting"
               class="flex items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
               <div class="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700/50 flex items-center justify-center mr-3">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600 dark:text-gray-400" fill="none"
@@ -191,7 +191,7 @@ const filteredPortfolios = computed(() => {
   return portfolios.value.filter(p => p.user_id === userId)
 })
 const isLoading = ref(false) // Paksa loading true untuk cek shimmer
-const viewMode = ref('grid') // 'grid' atau 'list'
+const viewMode = ref('list') // 'grid' atau 'list'
 
 // Get user data from localStorage
 const getUserFromLocalStorage = () => {
