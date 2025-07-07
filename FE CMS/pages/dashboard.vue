@@ -59,7 +59,7 @@
           </div>
         </div>
 
-        <div v-else-if="(portfolios?.length || 0) === 0"
+        <div v-else-if="(filteredPortfolios?.length || 0) === 0"
           class="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-8 text-center">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-400 mb-4" fill="none"
             viewBox="0 0 24 24" stroke="currentColor">
@@ -75,7 +75,7 @@
 
         <div v-else :class="viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ' : 'flex flex-col space-y-6'">
           <PortfolioCard
-            v-for="portfolio in portfolios"
+            v-for="portfolio in filteredPortfolios"
             :key="portfolio.id"
             :portfolio="portfolio"
             @edit="handleEditPortfolio"
@@ -133,7 +133,7 @@
                 </div>
               </div>
             </template>
-            <template v-else-if="(portfolios?.length || 0) === 0">
+            <template v-else-if="(filteredPortfolios?.length || 0) === 0">
               <div class="p-0 text-center">
                 <div class="max-w-xs mx-auto">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mx-auto text-gray-400 mb-3" fill="none"
@@ -147,7 +147,7 @@
               </div>
             </template>
             <template v-else>
-              <div v-for="portfolio in portfolios.slice(0, 3)" :key="portfolio.uuid" class="flex items-start">
+              <div v-for="portfolio in filteredPortfolios.slice(0, 3)" :key="portfolio.uuid" class="flex items-start">
                 <div
                   class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mr-3 mt-1">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500 dark:text-gray-400" fill="none"
@@ -174,7 +174,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRuntimeConfig } from '#imports'
 import Swal from 'sweetalert2'
 
@@ -185,6 +185,11 @@ definePageMeta({
 const config = useRuntimeConfig()
 const user = ref({})
 const portfolios = ref([])
+const filteredPortfolios = computed(() => {
+  const userId = user.value?.id
+  if (!userId) return []
+  return portfolios.value.filter(p => p.user_id === userId)
+})
 const isLoading = ref(false) // Paksa loading true untuk cek shimmer
 const viewMode = ref('grid') // 'grid' atau 'list'
 
@@ -231,7 +236,7 @@ onMounted(() => {
 })
 
 const handleEditPortfolio = (portfolio) => {
-  navigateTo(`/portfolios/${portfolio.uuid}/edit`)
+  navigateTo(`/portfolios/${portfolio.slug}/edit`)
 }
 
 const handleDeletePortfolio = async (portfolio) => {

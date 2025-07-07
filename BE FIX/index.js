@@ -5,7 +5,6 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const { Pool } = require('pg');
 const path = require('path'); 
-const fileUpload = require('express-fileupload');
 
 const app = express();
 
@@ -27,8 +26,6 @@ app.use(cors({
   credentials: true
 }));
 
-app.use(express.json());
-app.use(fileUpload());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); 
 
 
@@ -38,11 +35,11 @@ const pool = new Pool({
 
 const usersRoute = require('./routes/users');
 usersRoute.setPool(pool);
-app.use('/users', usersRoute.router);
+app.use('/users', express.json(), usersRoute.router);
 
 const loginRoute = require('./routes/login');
 loginRoute.setPool(pool);
-app.use('/login', loginRoute.router);
+app.use('/login', express.json(), loginRoute.router);
 
 const projectRoute = require('./routes/project');
 projectRoute.setPool(pool);
@@ -50,23 +47,23 @@ app.use('/project', projectRoute.router);
 
 const project_dRoute = require('./routes/project_d');
 project_dRoute.setPool(pool);
-app.use('/project_d', project_dRoute.router);
+app.use('/project_d', express.json(), project_dRoute.router);
 
 const metaRoute = require('./routes/meta');
 metaRoute.setPool(pool);
-app.use('/meta', metaRoute.router);
+app.use('/meta', express.json(), metaRoute.router);
 
 const orang_dRoute = require('./routes/orang_d');
 orang_dRoute.setPool(pool);
-app.use('/orang_d', orang_dRoute.router);
+app.use('/orang_d', express.json(), orang_dRoute.router);
 
 const orangRoute = require('./routes/orang');
 orangRoute.setPool(pool);
-app.use('/orang', orangRoute.router);
+app.use('/orang', express.json(), orangRoute.router);
 
 const project_detailRoute = require('./routes/projectDetail');
 project_detailRoute.setPool(pool);
-app.use('/project_detail', project_detailRoute.router);
+app.use('/project_detail', express.json(), project_detailRoute.router);
 
 
 // === MIDDLEWARE: AUTH BEARER TOKEN ===
@@ -100,15 +97,6 @@ protectedRoutes.forEach(({ route, methods }) => {
     next()
   })
 })
-
-// Attach routers after protection
-app.use('/project', projectRoute.router)
-app.use('/project_d', project_dRoute.router)
-app.use('/project_detail', project_detailRoute.router)
-app.use('/orang', orangRoute.router)
-app.use('/orang_d', orang_dRoute.router)
-app.use('/users', usersRoute.router)
-app.use('/meta', metaRoute.router)
 
 async function startServer() {
     console.log("Memulai inisialisasi server...");

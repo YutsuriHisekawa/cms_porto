@@ -4,6 +4,7 @@ const { Pool } = require('pg');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const JWT_SECRET = process.env.JWT_SECRET || 'secretkey';
+const defaultUpload = require('multer')({ dest: 'uploads/' });
 
 // Pool must be passed from the main app
 let pool;
@@ -97,7 +98,7 @@ router.post('/', async (req, res) => {
 });
 
 // Update user by slug (for profile update, including image upload)
-router.put('/:slug', authMiddleware, async (req, res) => {
+router.put('/:slug', authMiddleware, defaultUpload.single('profile_picture'), async (req, res) => {
     const { slug } = req.params;
     try {
         // Find user by slug
@@ -111,20 +112,23 @@ router.put('/:slug', authMiddleware, async (req, res) => {
             return res.status(403).json({ error: 'Forbidden: cannot update other users' });
         }
         let profile_picture_url = user.profile_picture;
-        // Jika multipart/form-data dan ada file
-        if (req.is('multipart/form-data') && req.files && req.files.profile_picture) {
-            const file = req.files.profile_picture;
+        if (req.file) {
             const fs = require('fs');
             const path = require('path');
             const uploadDir = path.join(__dirname, '../uploads');
             if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
-            const filename = `profile_${user.id}_${Date.now()}` + path.extname(file.name);
+            const filename = `profile_${user.id}_${Date.now()}${path.extname(req.file.originalname)}`;
             const filepath = path.join(uploadDir, filename);
-            fs.writeFileSync(filepath, file.data);
+            fs.renameSync(req.file.path, filepath);
             profile_picture_url = `/uploads/${filename}`;
         }
-        // Ambil data update dari body (bisa JSON atau form)
-        const { nama, nama_lengkap, username, email, description, no_telp } = req.body;
+        // Safe access for body fields
+        const nama = req.body?.nama;
+        const nama_lengkap = req.body?.nama_lengkap;
+        const username = req.body?.username;
+        const email = req.body?.email;
+        const description = req.body?.description;
+        const no_telp = req.body?.no_telp;
         const fields = [];
         const values = [];
         let idx = 1;
@@ -140,7 +144,7 @@ router.put('/:slug', authMiddleware, async (req, res) => {
         if (fields.length === 0) {
             return res.status(400).json({ error: 'Tidak ada data yang diubah' });
         }
-        const updateQuery = `UPDATE users SET ${fields.join(', ')}, updated_at = NOW() WHERE id = $${idx} RETURNING id, nama_lengkap, username, email, role, profile_picture, description, created_at, updated_at, slug`;
+        const updateQuery = `UPDATE users SET ${fields.join(', ')}, updated_at = NOW() WHERE id = $${idx} RETURNING id, nama, nama_lengkap, username, email, role, profile_picture, description, created_at, updated_at, slug, no_telp`;
         values.push(user.id);
         const result = await pool.query(updateQuery, values);
         res.json(result.rows[0]);

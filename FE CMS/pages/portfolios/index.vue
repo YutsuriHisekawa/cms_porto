@@ -127,6 +127,15 @@ const fetchPortfolios = async () => {
 
 const filteredPortfolios = computed(() => {
   let filtered = [...portfolios.value]
+  // Filter by user_id from localStorage
+  const userStr = localStorage.getItem('user')
+  let userId = null
+  try {
+    if (userStr) userId = JSON.parse(userStr).id
+  } catch {}
+  if (userId) {
+    filtered = filtered.filter(p => p.user_id === userId)
+  }
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
     filtered = filtered.filter(portfolio =>
