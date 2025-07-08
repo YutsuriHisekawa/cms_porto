@@ -188,11 +188,11 @@ import { useAuthStore } from '~/stores/auth'
 import UserPersonalInfo from '~/components/UserPersonalInfo.vue'
 
 const config = useRuntimeConfig()
-const user = ref(null)
+const auth = useAuthStore()
+const user = computed(() => auth.user)
 const loading = ref(true)
 const showModal = ref(false)
 const showPreviewModal = ref(false)
-const auth = useAuthStore()
 const fileInput = ref(null)
 const coverFileInput = ref(null)
 const selectedFile = ref(null)
@@ -226,7 +226,7 @@ function checkCoverImageRatio(base64) {
   img.onload = function () {
     const containerRatio = 5
     const imgRatio = img.width / img.height
-    if (imgRatio < containerRatio) {
+    if (imgRatio < containerRatio) {  
       coverBgSize.value = '100% 100%'
     } else {
       coverBgSize.value = 'cover'
@@ -236,7 +236,7 @@ function checkCoverImageRatio(base64) {
 }
 
 onMounted(async () => {
-  // Pastikan Pinia store auth.user selalu sync dengan localStorage
+  // Sync Pinia store from localStorage if needed
   if (!auth.user && typeof window !== 'undefined') {
     const userStr = localStorage.getItem('user')
     if (userStr) {
@@ -244,21 +244,19 @@ onMounted(async () => {
     }
   }
   try {
-    const authUser = JSON.parse(localStorage.getItem('user'))
+    const authUser = auth.user || JSON.parse(localStorage.getItem('user'))
     if (!authUser || !authUser.id) throw new Error('No user found')
     const data = await $fetch(`/users/${authUser.slug}`, {
       baseURL: config.public.baseUrl
     })
-    user.value = data
+    auth.user = data
     localStorage.setItem('user', JSON.stringify(data))
-    auth.user = data // <-- update Pinia store
     // Load cover image from localStorage if available
     const cover = getCoverImage()
     coverImage.value = cover
     if (cover) checkCoverImageRatio(cover)
   } catch (err) {
-    user.value = null
-    auth.user = null // <-- clear Pinia store if error
+    auth.user = null
   } finally {
     loading.value = false
   }
@@ -311,9 +309,8 @@ async function handleSaveProfilePicture(blob) {
     const data = await $fetch(`/users/${user.value.slug}`, {
       baseURL: config.public.baseUrl
     })
-    user.value = data
+    auth.user = data
     localStorage.setItem('user', JSON.stringify(data))
-    auth.user = data // <-- update Pinia store
     closeProfileModal()
   } catch (err) {
     // handle error (show toast, etc)
@@ -418,9 +415,8 @@ async function saveEdit() {
     const data = await $fetch(`/users/${user.value.slug}`, {
       baseURL: config.public.baseUrl
     })
-    user.value = data
+    auth.user = data
     localStorage.setItem('user', JSON.stringify(data))
-    auth.user = data // <-- update Pinia store
     isEdit.value = false
   } catch (err) {
     passwordError.value = err.data?.error || 'Gagal update profil.'

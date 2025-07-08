@@ -217,7 +217,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.543 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                 </svg>
                 <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                   stroke="currentColor">
@@ -239,7 +239,7 @@
         </div>
       </div>
 
-      <!-- SKILL SECTION -->
+      <!-- Skill Section -->
       <div class="space-y-4">
         <h3 class="text-lg font-semibold text-primary-900 dark:text-primary-100 border-b pb-2 border-primary-200 dark:border-primary-700 flex items-center">
           <svg class="h-5 w-5 mr-2 text-accent-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -247,80 +247,18 @@
           </svg>
           Skills
         </h3>
-        <div v-for="(skill, index) in editUser.skill_d" :key="skill.id || index" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-          <div>
-            <label class="block text-sm font-medium text-primary-600 dark:text-primary-300 mb-1">Skill Name</label>
-            <input v-model="skill.skill_name" class="input w-full" placeholder="e.g. JavaScript" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-primary-600 dark:text-primary-300 mb-1">Skill Level</label>
-            <select v-model="skill.skill_level" class="input w-full">
-              <option value="">Select level</option>
-              <option value="Beginner">Beginner</option>
-              <option value="Intermediate">Intermediate</option>
-              <option value="Advanced">Advanced</option>
-              <option value="Expert">Expert</option>
-            </select>
-          </div>
-          <div class="flex space-x-2">
-            <button @click="removeSkill(index)" class="btn-secondary">
-              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-            </button>
-          </div>
-        </div>
-        <button @click="addSkill" class="btn-primary mt-3">
-          <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-          Add Skill
-        </button>
+        <UserSkillSection :skills="isEdit ? editUser.skill_d : user.skill_d" :isEdit="isEdit" @add="addSkill" @remove="removeSkill" />
       </div>
 
-      <!-- Social Media Section (Edit Mode) -->
+      <!-- Social Media Section -->
       <div class="space-y-4">
         <h3 class="text-lg font-semibold text-primary-900 dark:text-primary-100 border-b pb-2 border-primary-200 dark:border-primary-700 flex items-center">
           <svg class="h-5 w-5 mr-2 text-accent-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c-1.657 0-3-4.03-3-9s1.343-9 3-9m0 18c1.657 0 3-4.03 3-9s-1.343-9-3-9m-9 9a9 9 0 019-9" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c-1.657 0-3-4.03-3-9s1.343-9 3-9m0 18c1.657 0 3-4.03 3-9s-1.343-9-3-9m-9 9a9 9 0 019-9" />
           </svg>
           Social Media
         </h3>
-        <div v-for="(social, index) in editUser.sosial_d" :key="social.id || index" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-          <div>
-            <label class="block text-sm font-medium text-primary-600 dark:text-primary-300 mb-1">Platform</label>
-            <select v-model="social.platform" class="input w-full">
-              <option value="">Select platform</option>
-              <option value="Facebook">Facebook</option>
-              <option value="Twitter">Twitter</option>
-              <option value="Instagram">Instagram</option>
-              <option value="LinkedIn">LinkedIn</option>
-              <option value="GitHub">GitHub</option>
-              <option value="YouTube">YouTube</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-primary-600 dark:text-primary-300 mb-1">URL</label>
-            <input v-model="social.url" class="input w-full" placeholder="https://" />
-          </div>
-          <div class="flex space-x-2">
-            <button @click="removeSocial(index)" class="btn-secondary">
-              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-            </button>
-          </div>
-        </div>
-        <button @click="addSocial" class="btn-primary mt-3">
-          <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-          Add Social Media
-        </button>
+        <UserSocialSection :socials="isEdit ? editUser.sosial_d : user.sosial_d" :isEdit="isEdit" @add="addSocial" @remove="removeSocial" />
       </div>
     </template>
 
@@ -365,7 +303,7 @@
           class="flex-shrink-0 h-10 w-10 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center">
           <svg class="h-5 w-5 text-primary-600 dark:text-primary-400" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
-          </svg>
+            </svg>
         </div>
         <div class="ml-4">
           <p class="text-sm font-medium text-primary-500 dark:text-primary-400">Username</p>
@@ -447,6 +385,7 @@
             Add Skill
           </button>
         </template>
+
         <template v-else>
           <div v-if="user.skill_d && user.skill_d.length > 0" class="flex flex-wrap gap-2">
             <div v-for="skill in user.skill_d" :key="skill.id"
@@ -460,6 +399,7 @@
             <p class="text-primary-500 dark:text-primary-400 italic">No skills added</p>
           </div>
         </template>
+        
       </div>
 
       <!-- Social Media Section -->
@@ -509,6 +449,7 @@
             Add Social Media
           </button>
         </template>
+
         <template v-else>
           <div v-if="user.sosial_d && user.sosial_d.length > 0" class="space-y-3">
             <div v-for="social in user.sosial_d" :key="social.id" class="flex items-center">
@@ -536,11 +477,15 @@
       </div>
 
     </template>
+
+    
   </div>
 </template>
 
 <script setup>
-import { ref, watch, toRefs, watchEffect, computed, defineComponent, h } from 'vue'
+import { ref, watch, toRefs, watchEffect } from 'vue'
+import UserSkillSection from './UserSkillSection.vue'
+import UserSocialSection from './UserSocialSection.vue'
 
 const props = defineProps({
   user: { type: Object, required: true },
@@ -576,9 +521,6 @@ watchEffect(() => {
     editUser.value.nama = user.value.nama || ''
   }
 })
-
-
-
 
 function addSkill() {
   if (!editUser.value.skill_d) editUser.value.skill_d = []
