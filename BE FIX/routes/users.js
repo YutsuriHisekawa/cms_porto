@@ -258,12 +258,17 @@ router.get('/:slug', async (req, res) => {
         // Get socials
         const sosialRes = await pool.query('SELECT * FROM sosial_d WHERE user_id = $1', [user.id]);
         user.sosial_d = sosialRes.rows;
+        // Get pengalaman kerja
+        const pengalamanRes = await pool.query('SELECT * FROM pengalaman_kerja_d WHERE user_id = $1 ORDER BY tanggal_mulai DESC', [user.id]);
+        user.pengalaman_kerja_d = pengalamanRes.rows;
+
         res.json(user);
     } catch (err) {
         console.error(err.message);
         res.status(500).json({ error: 'Server error' });
     }
 });
+
 
 // Delete user (hanya super admin/role MASTER yang boleh)
 router.delete('/:id', authMiddleware, validateUuidParam, async (req, res) => {
