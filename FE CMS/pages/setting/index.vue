@@ -91,6 +91,7 @@
           v-model:newPassword="newPassword"
           v-model:confirmPassword="confirmPassword"
           :passwordError="passwordError"
+          :key="user ? user.updated_at || user.id : 'none'"
         />
         <!-- Bio Section -->
 
@@ -349,7 +350,10 @@ function startEdit() {
     email: user.value.email,
     description: user.value.description || '',
     nama: user.value.nama || '',
-    no_telp: user.value.no_telp || ''
+    no_telp: user.value.no_telp || '',
+    // Deep copy skill_d and sosial_d to avoid mutating user directly
+    skill_d: user.value.skill_d ? JSON.parse(JSON.stringify(user.value.skill_d)) : [],
+    sosial_d: user.value.sosial_d ? JSON.parse(JSON.stringify(user.value.sosial_d)) : []
   }
   oldPassword.value = ''
   newPassword.value = ''
@@ -398,16 +402,19 @@ async function saveEdit() {
   // Update data profil jika ada perubahan
   const token = localStorage.getItem('auth-token')
   try {
+    const formData = new FormData()
+    formData.append('nama', editUser.value.nama)
+    formData.append('nama_lengkap', editUser.value.nama_lengkap)
+    formData.append('username', editUser.value.username)
+    formData.append('email', editUser.value.email)
+    formData.append('description', editUser.value.description)
+    formData.append('no_telp', editUser.value.no_telp)
+    // Kirim skill_d dan sosial_d sebagai JSON string
+    formData.append('skill_d', JSON.stringify(editUser.value.skill_d || []))
+    formData.append('sosial_d', JSON.stringify(editUser.value.sosial_d || []))
     await $fetch(`/users/${user.value.slug}`, {
       method: 'PUT',
-      body: {
-        nama: editUser.value.nama, // Ensure 'nama' is included
-        nama_lengkap: editUser.value.nama_lengkap,
-        username: editUser.value.username,
-        email: editUser.value.email,
-        description: editUser.value.description,
-        no_telp: editUser.value.no_telp
-      },
+      body: formData,
       baseURL: config.public.baseUrl,
       headers: token ? { Authorization: `Bearer ${token}` } : {}
     })

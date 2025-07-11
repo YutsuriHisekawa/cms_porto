@@ -6,6 +6,8 @@ const bcrypt = require('bcryptjs');
 const JWT_SECRET = process.env.JWT_SECRET || 'secretkey';
 const defaultUpload = require('multer')({ dest: 'uploads/' });
 const slugify = (str) => str.toString().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+const UserSkill = require('../models/UserSkill');
+const UserSocial = require('../models/UserSocial');
 
 // Pool must be passed from the main app
 let pool;
@@ -130,6 +132,8 @@ router.put('/:slug', authMiddleware, defaultUpload.single('profile_picture'), as
         const email = req.body?.email;
         const description = req.body?.description;
         const no_telp = req.body?.no_telp;
+        const skill_d = req.body?.skill_d ? JSON.parse(req.body.skill_d) : undefined;
+        const sosial_d = req.body?.sosial_d ? JSON.parse(req.body.sosial_d) : undefined;
         const fields = [];
         const values = [];
         let idx = 1;
@@ -142,13 +146,38 @@ router.put('/:slug', authMiddleware, defaultUpload.single('profile_picture'), as
         if (profile_picture_url !== user.profile_picture) {
             fields.push(`profile_picture = $${idx++}`); values.push(profile_picture_url);
         }
-        if (fields.length === 0) {
+        if (fields.length === 0 && !skill_d && !sosial_d) {
             return res.status(400).json({ error: 'Tidak ada data yang diubah' });
         }
-        const updateQuery = `UPDATE users SET ${fields.join(', ')}, updated_at = NOW() WHERE id = $${idx} RETURNING id, nama, nama_lengkap, username, email, role, profile_picture, description, created_at, updated_at, slug, no_telp`;
-        values.push(user.id);
-        const result = await pool.query(updateQuery, values);
-        res.json(result.rows[0]);
+        if (fields.length > 0) {
+            const updateQuery = `UPDATE users SET ${fields.join(', ')}, updated_at = NOW() WHERE id = $${idx} RETURNING id, nama, nama_lengkap, username, email, role, profile_picture, description, created_at, updated_at, slug, no_telp`;
+            values.push(user.id);
+            await pool.query(updateQuery, values);
+        }
+        // Update skills
+        if (Array.isArray(skill_d)) {
+            await UserSkill.destroy({ where: { user_id: user.id } });
+            for (const skill of skill_d) {
+                if (skill.skill_name) {
+                    await UserSkill.create({ user_id: user.id, skill_name: skill.skill_name, skill_level: skill.skill_level });
+                }
+            }
+        }
+        // Update socials
+        if (Array.isArray(sosial_d)) {
+            await UserSocial.destroy({ where: { user_id: user.id } });
+            for (const social of sosial_d) {
+                if (social.platform && social.url) {
+                    await UserSocial.create({ user_id: user.id, platform: social.platform, url: social.url });
+                }
+            }
+        }
+        // Get updated user with skills and socials
+        const updatedUserResult = await pool.query('SELECT id, nama, nama_lengkap, username, email, role, profile_picture, description, created_at, updated_at, slug, no_telp FROM users WHERE id = $1', [user.id]);
+        const updatedUser = updatedUserResult.rows[0];
+        updatedUser.skill_d = await UserSkill.findAll({ where: { user_id: user.id } });
+        updatedUser.sosial_d = await UserSocial.findAll({ where: { user_id: user.id } });
+        res.json(updatedUser);
     } catch (err) {
         console.error(err.message);
         res.status(500).json({ error: 'Server error' });
@@ -222,7 +251,14 @@ router.get('/:slug', async (req, res) => {
         if (result.rowCount === 0) {
             return res.status(404).json({ error: 'User not found' });
         }
-        res.json(result.rows[0]);
+        const user = result.rows[0];
+        // Get skills
+        const skillRes = await pool.query('SELECT * FROM skill_d WHERE user_id = $1', [user.id]);
+        user.skill_d = skillRes.rows;
+        // Get socials
+        const sosialRes = await pool.query('SELECT * FROM sosial_d WHERE user_id = $1', [user.id]);
+        user.sosial_d = sosialRes.rows;
+        res.json(user);
     } catch (err) {
         console.error(err.message);
         res.status(500).json({ error: 'Server error' });
