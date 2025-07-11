@@ -74,7 +74,7 @@
             <div class="absolute left-3 top-1/2 -translate-y-1/2 text-primary-400">
               <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
-            </svg>
+              </svg>
             </div>
           </div>
         </div>
@@ -88,7 +88,7 @@
               <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
+              </svg>
             </div>
           </div>
         </div>
@@ -217,7 +217,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.543 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                 </svg>
                 <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                   stroke="currentColor">
@@ -241,24 +241,43 @@
 
       <!-- Skill Section -->
       <div class="space-y-4">
-        <h3 class="text-lg font-semibold text-primary-900 dark:text-primary-100 border-b pb-2 border-primary-200 dark:border-primary-700 flex items-center">
+        <h3
+          class="text-lg font-semibold text-primary-900 dark:text-primary-100 border-b pb-2 border-primary-200 dark:border-primary-700 flex items-center">
           <svg class="h-5 w-5 mr-2 text-accent-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
           </svg>
           Skills
         </h3>
-        <UserSkillSection :skills="isEdit ? editUser.skill_d : user.skill_d" :isEdit="isEdit" @add="addSkill" @remove="removeSkill" />
+        <UserSkillSection :skills="isEdit ? editUser.skill_d : user.skill_d" :isEdit="isEdit" @add="addSkill"
+          @remove="removeSkill" />
       </div>
 
       <!-- Social Media Section -->
       <div class="space-y-4">
-        <h3 class="text-lg font-semibold text-primary-900 dark:text-primary-100 border-b pb-2 border-primary-200 dark:border-primary-700 flex items-center">
+        <h3
+          class="text-lg font-semibold text-primary-900 dark:text-primary-100 border-b pb-2 border-primary-200 dark:border-primary-700 flex items-center">
           <svg class="h-5 w-5 mr-2 text-accent-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c-1.657 0-3-4.03-3-9s1.343-9 3-9m0 18c1.657 0 3-4.03 3-9s-1.343-9-3-9m-9 9a9 9 0 019-9" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c-1.657 0-3-4.03-3-9s1.343-9 3-9m0 18c1.657 0 3-4.03 3-9s-1.343-9-3-9m-9 9a9 9 0 019-9" />
           </svg>
           Social Media
         </h3>
-        <UserSocialSection :socials="isEdit ? editUser.sosial_d : user.sosial_d" :isEdit="isEdit" @add="addSocial" @remove="removeSocial" />
+        <UserSocialSection :socials="isEdit ? editUser.sosial_d : user.sosial_d" :isEdit="isEdit" @add="addSocial"
+          @remove="removeSocial" />
+      </div>
+
+      <!-- Pengalaman Kerja Section -->
+      <div class="space-y-4">
+        <h3
+          class="text-lg font-semibold text-primary-900 dark:text-primary-100 border-b pb-2 border-primary-200 dark:border-primary-700 flex items-center">
+<svg class="h-5 w-5 mr-2 text-accent-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+</svg>
+          Pengalaman Kerja
+        </h3>
+        <UserExperienceSection :experiences="isEdit ? editUser.pengalaman_kerja_d : user.pengalaman_kerja_d"
+          :isEdit="isEdit" @add="addExperience" @remove="removeExperience" />
       </div>
     </template>
 
@@ -303,7 +322,7 @@
           class="flex-shrink-0 h-10 w-10 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center">
           <svg class="h-5 w-5 text-primary-600 dark:text-primary-400" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
-            </svg>
+          </svg>
         </div>
         <div class="ml-4">
           <p class="text-sm font-medium text-primary-500 dark:text-primary-400">Username</p>
@@ -399,7 +418,7 @@
             <p class="text-primary-500 dark:text-primary-400 italic">No skills added</p>
           </div>
         </template>
-        
+
       </div>
 
       <!-- Social Media Section -->
@@ -456,7 +475,8 @@
               <div
                 class="flex-shrink-0 h-10 w-10 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center">
                 <!-- Removed NuxtIcon, use generic SVG icon -->
-                <svg class="h-5 w-5 text-primary-600 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg class="h-5 w-5 text-primary-600 dark:text-primary-400" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
                   <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" />
                   <path d="M8 12h8M12 8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                 </svg>
@@ -476,9 +496,22 @@
         </template>
       </div>
 
+      <!-- Pengalaman Kerja Section -->
+      <div class="space-y-4">
+        <h3
+          class="text-lg font-semibold text-primary-900 dark:text-primary-100 border-b pb-2 border-primary-200 dark:border-primary-700 flex items-center">
+          <svg class="h-5 w-5 mr-2 text-accent-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+          Pengalaman Kerja
+        </h3>
+        <UserExperienceSection :experiences="user.pengalaman_kerja_d" :isEdit="false" />
+      </div>
+
     </template>
 
-    
+
   </div>
 </template>
 
@@ -486,6 +519,7 @@
 import { ref, watch, toRefs, watchEffect } from 'vue'
 import UserSkillSection from './UserSkillSection.vue'
 import UserSocialSection from './UserSocialSection.vue'
+import UserExperienceSection from './UserExperienceSection.vue'
 
 const props = defineProps({
   user: { type: Object, required: true },
@@ -535,6 +569,20 @@ function addSocial() {
 }
 function removeSocial(idx) {
   if (editUser.value.sosial_d) editUser.value.sosial_d.splice(idx, 1)
+}
+function addExperience() {
+  if (!editUser.value.pengalaman_kerja_d) editUser.value.pengalaman_kerja_d = []
+  editUser.value.pengalaman_kerja_d.push({
+    nama_perusahaan: '',
+    posisi: '',
+    deskripsi: '',
+    tanggal_mulai: '',
+    tanggal_akhir: '',
+    stay: false
+  })
+}
+function removeExperience(idx) {
+  if (editUser.value.pengalaman_kerja_d) editUser.value.pengalaman_kerja_d.splice(idx, 1)
 }
 
 
