@@ -65,6 +65,10 @@ const project_detailRoute = require('./routes/projectDetail');
 project_detailRoute.setPool(pool);
 app.use('/project_detail', express.json(), project_detailRoute.router);
 
+const pengalamanKerjaDRoute = require('./routes/pengalaman_kerja_d');
+pengalamanKerjaDRoute.setPool(pool);
+app.use('/pengalaman_kerja_d', express.json(), pengalamanKerjaDRoute.router);
+
 
 // === MIDDLEWARE: AUTH BEARER TOKEN ===
 function authBearerMiddleware(req, res, next) {

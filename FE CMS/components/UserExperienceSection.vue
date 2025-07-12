@@ -153,7 +153,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
 const formatDate = (dateString) => {
   if (!dateString) return '-';
@@ -170,12 +170,19 @@ const formatDateForInput = (dateString) => {
   return `${year}-${month}-${day}`;
 };
 
-defineProps({
+const props = defineProps({
   experiences: { type: Array, default: () => [] },
   isEdit: { type: Boolean, default: false }
 });
-
-defineEmits(['add', 'remove']);
+const emit = defineEmits(['add', 'remove', 'update:experiences']);
+// Watch agar setiap perubahan experiences di child langsung update ke parent
+watch(
+  () => props.experiences,
+  (val) => {
+    emit('update:experiences', val);
+  },
+  { deep: true }
+);
 </script>
 
 <style>

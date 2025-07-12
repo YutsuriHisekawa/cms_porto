@@ -276,8 +276,12 @@
 </svg>
           Pengalaman Kerja
         </h3>
-        <UserExperienceSection :experiences="isEdit ? editUser.pengalaman_kerja_d : user.pengalaman_kerja_d"
-          :isEdit="isEdit" @add="addExperience" @remove="removeExperience" />
+        <UserExperienceSection 
+          v-model:experiences="editUser.pengalaman_kerja_d"
+          :isEdit="isEdit" 
+          @add="addExperience" 
+          @remove="removeExperience" 
+        />
       </div>
     </template>
 

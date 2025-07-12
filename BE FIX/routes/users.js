@@ -134,6 +134,9 @@ router.put('/:slug', authMiddleware, defaultUpload.single('profile_picture'), as
         const no_telp = req.body?.no_telp;
         const skill_d = req.body?.skill_d ? JSON.parse(req.body.skill_d) : undefined;
         const sosial_d = req.body?.sosial_d ? JSON.parse(req.body.sosial_d) : undefined;
+        // Debug log untuk pengalaman_kerja_d
+        console.log('DEBUG pengalaman_kerja_d:', req.body.pengalaman_kerja_d);
+        const pengalaman_kerja_d = req.body?.pengalaman_kerja_d ? JSON.parse(req.body.pengalaman_kerja_d) : undefined;
         const fields = [];
         const values = [];
         let idx = 1;
@@ -146,7 +149,7 @@ router.put('/:slug', authMiddleware, defaultUpload.single('profile_picture'), as
         if (profile_picture_url !== user.profile_picture) {
             fields.push(`profile_picture = $${idx++}`); values.push(profile_picture_url);
         }
-        if (fields.length === 0 && !skill_d && !sosial_d) {
+        if (fields.length === 0 && !skill_d && !sosial_d && !pengalaman_kerja_d) {
             return res.status(400).json({ error: 'Tidak ada data yang diubah' });
         }
         if (fields.length > 0) {
@@ -172,11 +175,30 @@ router.put('/:slug', authMiddleware, defaultUpload.single('profile_picture'), as
                 }
             }
         }
+        // Update pengalaman kerja
+        if (Array.isArray(pengalaman_kerja_d)) {
+            // Hapus semua pengalaman lama user
+            await pool.query('DELETE FROM pengalaman_kerja_d WHERE user_id = $1', [user.id]);
+            // Insert ulang
+            for (const exp of pengalaman_kerja_d) {
+                // Use nama_perusahaan as per DB schema
+                const nama_perusahaan = exp.nama_perusahaan || exp.perusahaan || '';
+                if (exp.posisi && nama_perusahaan && exp.tanggal_mulai) {
+                    await pool.query(
+                        `INSERT INTO pengalaman_kerja_d (user_id, posisi, nama_perusahaan, deskripsi, tanggal_mulai, tanggal_akhir, stay) VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+                        [user.id, exp.posisi, nama_perusahaan, exp.deskripsi || '', exp.tanggal_mulai, exp.tanggal_akhir || null, exp.stay || false]
+                    );
+                }
+            }
+        }
         // Get updated user with skills and socials
         const updatedUserResult = await pool.query('SELECT id, nama, nama_lengkap, username, email, role, profile_picture, description, created_at, updated_at, slug, no_telp FROM users WHERE id = $1', [user.id]);
         const updatedUser = updatedUserResult.rows[0];
         updatedUser.skill_d = await UserSkill.findAll({ where: { user_id: user.id } });
         updatedUser.sosial_d = await UserSocial.findAll({ where: { user_id: user.id } });
+        // Tambahkan pengalaman_kerja_d ke response
+        const pengalamanRes = await pool.query('SELECT * FROM pengalaman_kerja_d WHERE user_id = $1 ORDER BY tanggal_mulai DESC', [user.id]);
+        updatedUser.pengalaman_kerja_d = pengalamanRes.rows;
         res.json(updatedUser);
     } catch (err) {
         console.error(err.message);
@@ -233,7 +255,16 @@ router.put('/:id', authMiddleware, validateUuidParam, async (req, res) => {
         if (result.rowCount === 0) {
             return res.status(404).json({ error: 'User not found' });
         }
-        res.json(result.rows[0]);
+        // Tambahkan pengalaman_kerja_d ke response
+        let pengalaman_kerja_d = [];
+        try {
+            const pengalamanRes = await pool.query('SELECT * FROM pengalaman_kerja_d WHERE user_id = $1 ORDER BY tanggal_mulai DESC', [id]);
+            pengalaman_kerja_d = Array.isArray(pengalamanRes.rows) ? pengalamanRes.rows : [];
+        } catch (e) {
+            pengalaman_kerja_d = [];
+        }
+        const userWithPengalaman = { ...result.rows[0], pengalaman_kerja_d };
+        res.json(userWithPengalaman);
     } catch (err) {
         console.error(err.message);
         res.status(500).json({ error: 'Server error' });

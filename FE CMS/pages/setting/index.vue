@@ -91,10 +91,9 @@
           v-model:newPassword="newPassword"
           v-model:confirmPassword="confirmPassword"
           :passwordError="passwordError"
+          v-model:experiences="editUser.pengalaman_kerja_d"
           :key="user ? user.updated_at || user.id : 'none'"
         />
-        <!-- Bio Section -->
-
       </div>
 
       <!-- Stats Footer -->
@@ -201,11 +200,20 @@ const coverImage = ref(null)
 const coverBgSize = ref('cover')
 // Edit state
 const isEdit = ref(false)
-const editUser = ref({ nama_lengkap: '', username: '', email: '', description: '' })
+const editUser = ref({
+  nama_lengkap: '',
+  username: '',
+  email: '',
+  description: '',
+  skill_d: [],
+  sosial_d: [],
+  pengalaman_kerja_d: []
+})
 const oldPassword = ref('')
 const newPassword = ref('')
 const confirmPassword = ref('')
 const passwordError = ref('')
+const experiences = ref([])
 
 function getCoverImage() {
   if (typeof window !== 'undefined' && window.localStorage) {
@@ -351,9 +359,9 @@ function startEdit() {
     description: user.value.description || '',
     nama: user.value.nama || '',
     no_telp: user.value.no_telp || '',
-    // Deep copy skill_d and sosial_d to avoid mutating user directly
     skill_d: user.value.skill_d ? JSON.parse(JSON.stringify(user.value.skill_d)) : [],
-    sosial_d: user.value.sosial_d ? JSON.parse(JSON.stringify(user.value.sosial_d)) : []
+    sosial_d: user.value.sosial_d ? JSON.parse(JSON.stringify(user.value.sosial_d)) : [],
+    pengalaman_kerja_d: user.value.pengalaman_kerja_d ? JSON.parse(JSON.stringify(user.value.pengalaman_kerja_d)) : []
   }
   oldPassword.value = ''
   newPassword.value = ''
@@ -401,33 +409,37 @@ async function saveEdit() {
   }
   // Update data profil jika ada perubahan
   const token = localStorage.getItem('auth-token')
+  const userId = user.value.id
+  // Tambahkan log debug FE
+  const bodyToSend = {
+    nama_lengkap: editUser.value.nama_lengkap,
+    username: editUser.value.username,
+    email: editUser.value.email,
+    description: editUser.value.description,
+    nama: editUser.value.nama,
+    no_telp: editUser.value.no_telp,
+    skill_d: JSON.stringify(editUser.value.skill_d),
+    sosial_d: JSON.stringify(editUser.value.sosial_d),
+    pengalaman_kerja_d: JSON.stringify(editUser.value.pengalaman_kerja_d)
+  }
+  console.log('DEBUG FE PUT /users/:slug body:', bodyToSend)
   try {
-    const formData = new FormData()
-    formData.append('nama', editUser.value.nama)
-    formData.append('nama_lengkap', editUser.value.nama_lengkap)
-    formData.append('username', editUser.value.username)
-    formData.append('email', editUser.value.email)
-    formData.append('description', editUser.value.description)
-    formData.append('no_telp', editUser.value.no_telp)
-    // Kirim skill_d dan sosial_d sebagai JSON string
-    formData.append('skill_d', JSON.stringify(editUser.value.skill_d || []))
-    formData.append('sosial_d', JSON.stringify(editUser.value.sosial_d || []))
     await $fetch(`/users/${user.value.slug}`, {
       method: 'PUT',
-      body: formData,
+      body: bodyToSend,
       baseURL: config.public.baseUrl,
       headers: token ? { Authorization: `Bearer ${token}` } : {}
     })
-    // Refresh user data
-    const data = await $fetch(`/users/${user.value.slug}`, {
-      baseURL: config.public.baseUrl
-    })
-    auth.user = data
-    localStorage.setItem('user', JSON.stringify(data))
-    isEdit.value = false
   } catch (err) {
-    passwordError.value = err.data?.error || 'Gagal update profil.'
+    // handle error jika perlu
   }
+  // Refresh user data
+  const data = await $fetch(`/users/${user.value.slug}`, {
+    baseURL: config.public.baseUrl
+  })
+  auth.user = data
+  localStorage.setItem('user', JSON.stringify(data))
+  isEdit.value = false
 }
 </script>
 
